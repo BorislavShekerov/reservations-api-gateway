@@ -1,8 +1,6 @@
 package com.boris.reservations.zuul.security.filters;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -18,9 +16,12 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Service;
 
 import com.boris.reservations.zuul.security.model.UserContext;
+import com.boris.reservations.zuul.security.model.UserLoginResponse;
 import com.boris.reservations.zuul.security.token.JwtToken;
+import com.boris.reservations.zuul.security.token.JwtTokenContainer;
 import com.boris.reservations.zuul.security.token.JwtTokenFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 @Service
 public class AjaxAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
@@ -37,19 +38,20 @@ public class AjaxAuthenticationSuccessHandler implements AuthenticationSuccessHa
 	@Override
 	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
 			Authentication authentication) throws IOException, ServletException {
+
 		UserContext userContext = (UserContext) authentication.getPrincipal();
 
 		JwtToken accessToken = tokenFactory.createAccessJwtToken(userContext);
 		JwtToken refreshToken = tokenFactory.createRefreshToken(userContext);
 
-		Map<String, String> tokenMap = new HashMap<String, String>();
-		tokenMap.put("token", accessToken.getToken());
-		tokenMap.put("refreshToken", refreshToken.getToken());
-
+		JwtTokenContainer jwtTokenContainer = new JwtTokenContainer(accessToken.getToken(), refreshToken.getToken());
+		UserLoginResponse loginResponse = new UserLoginResponse((UserContext) authentication.getPrincipal(), jwtTokenContainer);
+		
 		response.setStatus(HttpStatus.OK.value());
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-		mapper.writeValue(response.getWriter(), tokenMap);
-
+		mapper.writeValue(response.getWriter(), loginResponse);
+		
+		
 		clearAuthenticationAttributes(request);
 	}
 

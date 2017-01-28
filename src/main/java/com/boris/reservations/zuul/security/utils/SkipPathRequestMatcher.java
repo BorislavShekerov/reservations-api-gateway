@@ -1,7 +1,8 @@
 package com.boris.reservations.zuul.security.utils;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.List;
-import static java.util.stream.Collectors.*;
 
 import javax.servlet.http.HttpServletRequest;
 

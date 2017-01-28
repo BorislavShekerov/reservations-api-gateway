@@ -34,4 +34,13 @@ public class UserDetails {
 	public List<UserRole> getRoles() {
 		return roles;
 	}
+
+	public void encryptPassword(String encryptedPassword) {
+		this.password = encryptedPassword;
+	}
+
+	public void setRoles(List<UserRole> roles) {
+		this.roles = roles;
+	}
+	
 }

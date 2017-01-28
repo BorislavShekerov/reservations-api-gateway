@@ -30,9 +30,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public static final String JWT_TOKEN_HEADER_PARAM = "X-Authorization";
     public static final String FORM_BASED_LOGIN_ENTRY_POINT = "/api/auth/login";
-    public static final String FORM_BASED_REGISTER_ENTRY_POINT = "/up-api/users";
     public static final String TOKEN_BASED_AUTH_ENTRY_POINT = "/api/**";
+    public static final String VENUE_SERVICE_AUTH_POINT = "/api/venue-api/**";
     public static final String TOKEN_REFRESH_ENTRY_POINT = "/api/auth/token";
+    public static final String SIGN_UP_ENTRYPOINT = "/api/auth/signUp";
     
     @Autowired private RestAuthenticationEntryPoint authenticationEntryPoint;
     @Autowired private AuthenticationSuccessHandler successHandler;
@@ -53,7 +54,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
     
     protected JwtTokenAuthenticationProcessingFilter buildJwtTokenAuthenticationProcessingFilter() throws Exception {
-        List<String> pathsToSkip = Arrays.asList(TOKEN_REFRESH_ENTRY_POINT, FORM_BASED_LOGIN_ENTRY_POINT, FORM_BASED_REGISTER_ENTRY_POINT);
+        List<String> pathsToSkip = Arrays.asList(TOKEN_REFRESH_ENTRY_POINT, FORM_BASED_LOGIN_ENTRY_POINT, SIGN_UP_ENTRYPOINT, VENUE_SERVICE_AUTH_POINT);
         SkipPathRequestMatcher matcher = new SkipPathRequestMatcher(pathsToSkip, TOKEN_BASED_AUTH_ENTRY_POINT);
         JwtTokenAuthenticationProcessingFilter filter 
             = new JwtTokenAuthenticationProcessingFilter(failureHandler, tokenExtractor, matcher);
@@ -86,7 +87,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             .authorizeRequests()
                 .antMatchers(FORM_BASED_LOGIN_ENTRY_POINT).permitAll() // Login end-point
                 .antMatchers(TOKEN_REFRESH_ENTRY_POINT).permitAll() 
-                .antMatchers(FORM_BASED_REGISTER_ENTRY_POINT).permitAll()// Token refresh end-point
+                .antMatchers(SIGN_UP_ENTRYPOINT).permitAll()// Token refresh end-point
+                .antMatchers(VENUE_SERVICE_AUTH_POINT).permitAll()// Token refresh end-point
         .and()
             .authorizeRequests()
                 .antMatchers(TOKEN_BASED_AUTH_ENTRY_POINT).authenticated() // Protected API End-points

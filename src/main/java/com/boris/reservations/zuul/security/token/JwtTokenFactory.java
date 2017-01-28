@@ -3,6 +3,7 @@ package com.boris.reservations.zuul.security.token;
 import static java.util.stream.Collectors.toList;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.UUID;
@@ -47,11 +48,11 @@ public class JwtTokenFactory {
 
         Instant currentTime = Instant.now();
 
-        String token = Jwts.builder()
+		String token = Jwts.builder()
           .setClaims(claims)
           .setIssuer(settings.getTokenIssuer())
           .setIssuedAt(Date.from(currentTime))
-          .setExpiration(Date.from(currentTime.plusMillis(settings.getTokenExpirationTime())))
+          .setExpiration(Date.from(currentTime.plus(settings.getTokenExpirationTime(), ChronoUnit.MINUTES)))
           .signWith(SignatureAlgorithm.HS512, settings.getTokenSigningKey())
         .compact();
 
@@ -73,7 +74,7 @@ public class JwtTokenFactory {
           .setIssuer(settings.getTokenIssuer())
           .setId(UUID.randomUUID().toString())
           .setIssuedAt(Date.from(currentTime))
-          .setExpiration(Date.from(currentTime.plusMillis(settings.getRefreshTokenExpTime())))
+          .setExpiration(Date.from(currentTime.plus(settings.getRefreshTokenExpTime(), ChronoUnit.MINUTES)))
           .signWith(SignatureAlgorithm.HS512, settings.getTokenSigningKey())
         .compact();
 

@@ -14,4 +14,7 @@ public interface UserService {
 	
 	@RequestMapping(method = RequestMethod.GET, value = "/users/{userEmail}")
 	public UserDetails getUserDetails(@PathVariable("userEmail") String userEmail);
+
+	@RequestMapping(method = RequestMethod.POST, value = "/users/")
+	public Boolean registerUserDetails(UserDetails userDetailsToRegister);
 }

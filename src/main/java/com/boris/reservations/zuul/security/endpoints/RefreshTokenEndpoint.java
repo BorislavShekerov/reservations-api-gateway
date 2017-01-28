@@ -26,7 +26,8 @@ import com.boris.reservations.zuul.security.exceptions.InvalidJwtToken;
 import com.boris.reservations.zuul.security.model.UserContext;
 import com.boris.reservations.zuul.security.model.UserDetails;
 import com.boris.reservations.zuul.security.service.UserService;
-import com.boris.reservations.zuul.security.token.JwtToken;
+import com.boris.reservations.zuul.security.token.AccessJwtToken;
+import com.boris.reservations.zuul.security.token.JwtTokenContainer;
 import com.boris.reservations.zuul.security.token.JwtTokenFactory;
 import com.boris.reservations.zuul.security.token.RawAccessJwtToken;
 import com.boris.reservations.zuul.security.token.RefreshToken;
@@ -42,7 +43,7 @@ public class RefreshTokenEndpoint {
     @Autowired @Qualifier("jwtHeaderTokenExtractor") private TokenExtractor tokenExtractor;
     
     @RequestMapping(value="/api/auth/token", method=RequestMethod.GET, produces={ MediaType.APPLICATION_JSON_VALUE })
-    public @ResponseBody JwtToken refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public @ResponseBody JwtTokenContainer refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         String tokenPayload = tokenExtractor.extract(request.getHeader(WebSecurityConfig.JWT_TOKEN_HEADER_PARAM));
         
         RawAccessJwtToken rawToken = new RawAccessJwtToken(tokenPayload);
@@ -63,7 +64,11 @@ public class RefreshTokenEndpoint {
                 .collect(Collectors.toList());
 
         UserContext userContext = UserContext.create(user.getEmail(), authorities);
-
-        return tokenFactory.createAccessJwtToken(userContext);
+        
+        AccessJwtToken newAccessToken = tokenFactory.createAccessJwtToken(userContext);
+        refreshToken.extendLifetime(jwtSettings.getTokenExpirationTime());
+        
+        JwtTokenContainer tokenContainer = new JwtTokenContainer(newAccessToken.getToken(), refreshToken.getToken());
+        return tokenContainer;
     }
 }

@@ -1,7 +1,8 @@
 package com.boris.reservations.zuul.security.providers;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.List;
-import static java.util.stream.Collectors.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -41,6 +42,7 @@ public class AjaxAuthenticationProvider implements AuthenticationProvider {
         
         if(user == null) throw new UsernameNotFoundException("User not found: " + username);
         
+        encoder.encode(password);
         if (!encoder.matches(password, user.getPassword())) {
             throw new BadCredentialsException("Authentication Failed. Username or Password not valid.");
         }
