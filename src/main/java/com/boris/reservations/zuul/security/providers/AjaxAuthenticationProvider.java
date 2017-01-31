@@ -21,18 +21,36 @@ import com.boris.reservations.zuul.security.model.UserContext;
 import com.boris.reservations.zuul.security.model.UserDetails;
 import com.boris.reservations.zuul.security.service.UserService;
 
+/**
+ * The Class AjaxAuthenticationProvider.
+ *
+ * @author sheke
+ */
 @Component
 public class AjaxAuthenticationProvider implements AuthenticationProvider {
+    
+    /** The encoder. */
     private final BCryptPasswordEncoder encoder;
+    
+    /** The user service. */
     @Autowired
     private final UserService userService;
 
     
+    /**
+     * Instantiates a new ajax authentication provider.
+     *
+     * @param userService the user service
+     * @param encoder the encoder
+     */
     public AjaxAuthenticationProvider(final UserService userService, final BCryptPasswordEncoder encoder) {
         this.userService = userService;
         this.encoder = encoder;
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.security.authentication.AuthenticationProvider#authenticate(org.springframework.security.core.Authentication)
+     */
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String username = (String) authentication.getPrincipal();
@@ -53,11 +71,14 @@ public class AjaxAuthenticationProvider implements AuthenticationProvider {
                 .map(authority -> new SimpleGrantedAuthority(authority.authority()))
                 .collect(toList());
         
-        UserContext userContext = UserContext.create(user.getEmail(), authorities);
+        UserContext userContext = UserContext.create(user.getEmail(), user.getFirstName(), user.getLastName(), authorities);
         
         return new UsernamePasswordAuthenticationToken(userContext, null, userContext.getAuthorities());
     }
 
+    /* (non-Javadoc)
+     * @see org.springframework.security.authentication.AuthenticationProvider#supports(java.lang.Class)
+     */
     @Override
     public boolean supports(Class<?> authentication) {
         return (UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication));

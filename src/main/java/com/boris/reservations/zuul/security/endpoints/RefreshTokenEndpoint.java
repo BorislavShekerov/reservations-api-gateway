@@ -63,7 +63,7 @@ public class RefreshTokenEndpoint {
                 .map(authority -> new SimpleGrantedAuthority(authority.authority()))
                 .collect(Collectors.toList());
 
-        UserContext userContext = UserContext.create(user.getEmail(), authorities);
+        UserContext userContext = UserContext.create(user.getEmail(), user.getFirstName(), user.getLastName(), authorities);
         
         AccessJwtToken newAccessToken = tokenFactory.createAccessJwtToken(userContext);
         refreshToken.extendLifetime(jwtSettings.getTokenExpirationTime());

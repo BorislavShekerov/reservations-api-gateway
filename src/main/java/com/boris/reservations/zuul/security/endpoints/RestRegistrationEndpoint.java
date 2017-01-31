@@ -32,37 +32,59 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * The Class RestRegistrationEndpoint.
+ *
+ * @author sheke
+ */
 @Controller
 public class RestRegistrationEndpoint {
-	
+
+	/** The Constant LOGGER. */
 	private static final Logger LOGGER = Logger.getLogger(RestRegistrationEndpoint.class);
+	
+	/** The user service. */
 	@Autowired
 	private UserService userService;
-	
+
+	/** The mapper. */
 	@Autowired
 	private ObjectMapper mapper;
-	
+
+	/** The token factory. */
 	@Autowired
 	private JwtTokenFactory tokenFactory;
-	
+
+	/** The encoder. */
 	@Autowired
 	private BCryptPasswordEncoder encoder;
-	
+
+	/**
+	 * Sign up.
+	 *
+	 * @param userToSignUp the user to sign up
+	 * @param request the request
+	 * @param response the response
+	 * @return the response entity
+	 * @throws JsonGenerationException the json generation exception
+	 * @throws JsonMappingException the json mapping exception
+	 * @throws IOException Signals that an I/O exception has occurred.
+	 */
 	@PostMapping("/api/auth/signUp")
-	public ResponseEntity<?> signUp(@RequestBody UserDetails userToSignUp, HttpServletRequest request, HttpServletResponse response) throws JsonGenerationException, JsonMappingException, IOException{
+	public ResponseEntity<?> signUp(@RequestBody UserDetails userToSignUp, HttpServletRequest request,
+			HttpServletResponse response) throws JsonGenerationException, JsonMappingException, IOException {
 		encodePassword(userToSignUp);
 		userToSignUp.setRoles(Arrays.asList(UserRole.MEMBER));
-		
-		boolean emailFree = userService.registerUserDetails(userToSignUp);
-		
-		if(emailFree){
-			 List<GrantedAuthority> authorities = userToSignUp.getRoles().stream()
-		                .map(authority -> new SimpleGrantedAuthority(authority.authority()))
-		                .collect(Collectors.toList());
 
-		     
-			UserContext userContext = UserContext.create(userToSignUp.getEmail(), authorities);
-			
+		boolean emailFree = userService.registerUserDetails(userToSignUp);
+
+		if (emailFree) {
+			List<GrantedAuthority> authorities = userToSignUp.getRoles().stream()
+					.map(authority -> new SimpleGrantedAuthority(authority.authority())).collect(Collectors.toList());
+
+			UserContext userContext = UserContext.create(userToSignUp.getEmail(), userToSignUp.getFirstName(),
+					userToSignUp.getLastName(), authorities);
+
 			JwtToken accessToken = tokenFactory.createAccessJwtToken(userContext);
 			JwtToken refreshToken = tokenFactory.createRefreshToken(userContext);
 
@@ -73,13 +95,18 @@ public class RestRegistrationEndpoint {
 			response.setStatus(HttpStatus.OK.value());
 			response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 			mapper.writeValue(response.getWriter(), tokenMap);
-			
+
 			return new ResponseEntity<>(HttpStatus.CREATED);
-		}else{
+		} else {
 			return new ResponseEntity<>(HttpStatus.CONFLICT);
 		}
 	}
 
+	/**
+	 * Encode password.
+	 *
+	 * @param userToSignUp the user to sign up
+	 */
 	private void encodePassword(UserDetails userToSignUp) {
 		userToSignUp.encryptPassword(encoder.encode(userToSignUp.getPassword()));
 	}

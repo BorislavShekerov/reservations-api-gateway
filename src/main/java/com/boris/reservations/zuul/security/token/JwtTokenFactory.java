@@ -44,6 +44,8 @@ public class JwtTokenFactory {
             throw new IllegalArgumentException("User doesn't have any privileges");
 
         Claims claims = Jwts.claims().setSubject(userContext.getEmail());
+        claims.put("firstName", userContext.getFirstName());
+        claims.put("lastName", userContext.getFirstName());
         claims.put("scopes", userContext.getAuthorities().stream().map(s -> s.toString()).collect(toList()));
 
         Instant currentTime = Instant.now();
